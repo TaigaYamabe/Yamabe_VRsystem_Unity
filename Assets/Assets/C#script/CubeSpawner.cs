@@ -10,9 +10,9 @@ using UnityEngine;
 
 public class CubeSpawner : MonoBehaviour
 {
-
+    G_script script;
     GameObject Electronic;
-    GameObject obj;
+    [SerializeField] GameObject obj;
     //public static CubeSpawner instance;
     //ObjectPooler objectPooler;
     public InputFile InputFile;
@@ -20,11 +20,11 @@ public class CubeSpawner : MonoBehaviour
     public int iTimeCounter = 0;
     public int MaxNum = 300;
     public int Num = 300;
+    //public float[,] v;
     UnityEngine.Vector3 kero = new UnityEngine.Vector3(0.002f, 0.002f, 0.002f);
     private void Start()
     {
         Electronic = this.gameObject;
-        obj = (GameObject)Resources.Load("Prefab");
         for (int i = 0; i <= MaxNum; i++)
         {
             GameObject object2 = (GameObject)Instantiate(obj, new Vector3(0, 0, 0), Quaternion.identity);
@@ -66,15 +66,15 @@ public class CubeSpawner : MonoBehaviour
             }
         }
     }
-    public void DestoryIfExist(string name)
-    {
-        var gameObject = GameObject.Find(name);
-        if (gameObject != null)
-        {
-            GameObject.Destroy(gameObject);
-        }
+    //public void DestoryIfExist(string name)
+    //{
+    //    var gameObject = GameObject.Find(name);
+    //    if (gameObject != null)
+    //    {
+    //        GameObject.Destroy(gameObject);
+    //    }
         
-    }
+    //}
 
     //TimeSlice毎の粒子を表示する
     private void LocateParticle(int indexSlice)
@@ -95,8 +95,12 @@ public class CubeSpawner : MonoBehaviour
                 if ((int)T.ID <= MaxNum)
                 {
                     GameObject child = transform.GetChild((int)T.ID).gameObject;
+                    script = child.GetComponent<G_script>();
+                    script.G = T.G;
                     child.SetActive(true);
                     child.transform.position = T.Pos;
+                    child.GetComponent<Renderer>().material.color = new Color(1.0f, 1-T.G / 4.43456f, 1-T.G / 4.43456f, 1.0f);
+                    //child.GetComponent<Renderer>().material.color = new Color(1 - T.G / 4.43456f,1.0f, 1 - T.G / 4.43456f, 1.0f);
                 }
             }
         }
@@ -116,7 +120,12 @@ public class CubeSpawner : MonoBehaviour
                         if ((int)T.ID <= MaxNum)
                         {
                             GameObject child = transform.GetChild((int)T.ID).gameObject;
+                            script = child.GetComponent<G_script>();
+                            script.G = T.G;
+                            script.V = T.Pos - S.Pos;
                             child.transform.position = T.Pos;
+                            child.GetComponent<Renderer>().material.color = new Color(1.0f, 1-T.G / 4.43456f, 1-T.G / 4.43456f, 1.0f);
+                            //child.GetComponent<Renderer>().material.color = new Color(1 - T.G / 4.43456f, 1.0f, 1 - T.G / 4.43456f, 1.0f);
                             //objectPooler.SpawnFromPool("Cube1", T.Pos, UnityEngine.Quaternion.Euler(90f, 0f, 0f), kero, T.ID);
                         }
                         break;
@@ -126,8 +135,12 @@ public class CubeSpawner : MonoBehaviour
                         if ((int)T.ID <= MaxNum)
                         {
                             GameObject child = transform.GetChild((int)T.ID).gameObject;
+                            script = child.GetComponent<G_script>();
+                            script.G = T.G;
                             child.SetActive(true);
                             child.transform.position = T.Pos;
+                            child.GetComponent<Renderer>().material.color = new Color(1.0f, 1-T.G / 4.43456f, 1-T.G / 4.43456f, 1.0f);
+                            //child.GetComponent<Renderer>().material.color = new Color(1 - T.G / 4.43456f, 1.0f, 1 - T.G / 4.43456f, 1.0f);
 
                         }
                     }
@@ -142,6 +155,7 @@ public class CubeSpawner : MonoBehaviour
                     InputFile.clsParticlePosition S = InputFile.inputFile.timeSlice[indexSlice].particlePosition[k];
                     if (T.ID == S.ID)
                     {
+                        script.V = T.Pos - S.Pos;
                         break;
                     }
                     else if (k == InputFile.inputFile.timeSlice[indexSlice].particlePosition.Count - 1)

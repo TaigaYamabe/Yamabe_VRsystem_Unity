@@ -6,15 +6,21 @@ using UnityEngine;
 
 public class Client : MonoBehaviour
 {
-    private GameObject sphereObject;
-    CubeSpawner cubeSpawner;
+    public static string sphere_x, sphere_y, sphere_z;
     public static string pos_x, pos_y, pos_z, rot_x, rot_y, rot_z,time;
+    public static string collision_x, collision_y, collision_z,g;
     public static string resMsg;
     System.Net.Sockets.NetworkStream ns;
     System.Net.Sockets.TcpClient tcp;
     System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-    [SerializeField] GameObject target1;
-    RotationReset script;
+   // [SerializeField] GameObject target1;
+    [SerializeField] RotationReset rotationReset;
+    [SerializeField] PlayerCollider playerCollider;
+    //private GameObject sphereObject;
+    [SerializeField] CubeSpawner cubeSpawner;
+    [SerializeField] TargetMove targetMove;
+
+
     // Use this for initialization
     void Start()
     {
@@ -26,6 +32,14 @@ public class Client : MonoBehaviour
         rot_x = "1234567";
         rot_y = "1234567";
         rot_z = "1234567";
+        collision_x = "1234567";
+        collision_y = "1234567";
+        collision_z = "1234567";
+        g = "1234567";
+        sphere_x = "1234567";
+        sphere_y = "1234567";
+        sphere_z = "1234567";
+
 
 
         //サーバーのIPアドレスとポート番号
@@ -42,19 +56,21 @@ public class Client : MonoBehaviour
 
         //NetworkStreamを取得
         ns = tcp.GetStream();
-        target1 = GameObject.Find("RightHandAnchor");
-        script = target1.GetComponent<RotationReset>();
-        sphereObject = GameObject.Find("CubeSpawner");
-        cubeSpawner = sphereObject.GetComponent<CubeSpawner>();
+        //target1 = GameObject.Find("RightHandAnchor");
+        //script = target1.GetComponent<RotationReset>();
+        //sphereObject = GameObject.Find("CubeSpawner");
+        //cubeSpawner = sphereObject.GetComponent<CubeSpawner>();
+        //playerCollider = this.GetComponent<PlayerCollider>();
         //Transform myTransform = this.transform;
     }
     // Update is called once per frame
     void Update()
     {
        // sw.Start();
-        float rotation_x = script.send_x;
-        float rotation_y = script.send_y;
-        float rotation_z = script.send_z;
+        float rotation_x = rotationReset.send_x;
+        float rotation_y = rotationReset.send_y;
+        float rotation_z = rotationReset.send_z;
+
         Transform myTransform = this.transform;
        // Transform handTransform = target1.transform;
 
@@ -67,7 +83,27 @@ public class Client : MonoBehaviour
         rot_y = rotation_y.ToString("f4");
         rot_z = rotation_z.ToString("f4");
         time = cubeSpawner.iTimeCounter.ToString();
-        
+        g = playerCollider.colider_g.ToString("f4");
+        sphere_x = targetMove.target_x.ToString("f4");
+        sphere_y = targetMove.target_y.ToString("f4");
+        sphere_z = targetMove.target_z.ToString("f4");
+
+        //電子の衝突角度方向への力覚提示
+        //collision_x = playerCollider.colider_rot.x.ToString("f4");
+        //collision_y = playerCollider.colider_rot.y.ToString("f4");
+        //collision_z = playerCollider.colider_rot.z.ToString("f4");
+
+
+        //電子の速度ベクトルの力覚提示
+        collision_x = playerCollider.colider_vec.x.ToString("f4");
+        collision_y = playerCollider.colider_vec.y.ToString("f4");
+        collision_z = playerCollider.colider_vec.z.ToString("f4");
+
+
+
+
+
+
         //タイムアウト設定
         ns.ReadTimeout = 1000;
         ns.WriteTimeout = 1000;
@@ -75,8 +111,8 @@ public class Client : MonoBehaviour
         //サーバーにデータを送信
         //文字列をByte型配列に変換
         System.Text.Encoding enc = System.Text.Encoding.UTF8;
-        byte[] sendBytes = enc.GetBytes(pos_x + ',' + pos_y + ',' + pos_z + ',' + time + ',' + rot_x + ',' + rot_y + ',' + rot_z + ',');
-       
+        byte[] sendBytes = enc.GetBytes(pos_x + ',' + pos_y + ',' + pos_z + ',' + time + ',' + rot_x + ',' + rot_y + ',' + rot_z + ',' + collision_x + ',' + collision_y + ',' + collision_z + ',' + g + ',' + sphere_x + ',' + sphere_y + ',' + sphere_z);
+        //byte[] sendBytes = enc.GetBytes(pos_x + ',' + pos_y + ',' + pos_z + ',' + time + ',' + rot_x + ',' + rot_y + ',' + rot_z + ',');
 
         //データを送信する
         ns.Write(sendBytes, 0, sendBytes.Length);
