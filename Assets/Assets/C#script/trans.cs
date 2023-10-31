@@ -17,6 +17,7 @@ public class trans : MonoBehaviour
     public static int time;
     public static int time_sin;
     private List<List<string>> LoadFileData = new List<List<string>>();
+    private List<List<string>> LoadFileData_electric = new List<List<string>>();
     private float a = 0;
     private float a_sin = 0;
     private float[] a_n = new float[70];
@@ -24,10 +25,12 @@ public class trans : MonoBehaviour
     private float max_a = 0;
     private float min_a = 0;
     private float[,] positions = new float[70,3];
+    private float[,] positions_electric = new float[70, 3];
+    private int p = 0;
     // Start is called before the first frame update
     void Start()
     {
-        var filePath = "Assets/Assets/txt/電場.txt";
+        var filePath1 = "Assets/Assets/txt/電場.txt";
         // 読み込んだデータを格納するList<List<string>>
         //   List<List<string>> LoadFileData = new List<List<string>>();
 
@@ -36,10 +39,10 @@ public class trans : MonoBehaviour
         String[] readLine;
 
         // 読み込むファイルが存在するか確認する
-        if (File.Exists(filePath))
+        if (File.Exists(filePath1))
         // ファイルが存在するときだけ処理する
         {   /* StreamReaderを使った読み込み処理 */
-            using (StreamReader sr = new StreamReader(filePath, Encoding.UTF8))
+            using (StreamReader sr = new StreamReader(filePath1, Encoding.UTF8))
             {
 
                 // ファイルの末端に達するまで、ファイルから行を読み込んで、表示します。
@@ -63,12 +66,41 @@ public class trans : MonoBehaviour
 
 
         }
-        for (int i = 0; i < 70; i++)
+
+        var filePath2 = "Assets/Assets/txt/電場_円柱オブジェクト.txt";
+        if (File.Exists(filePath2))
+        // ファイルが存在するときだけ処理する
+        {   /* StreamReaderを使った読み込み処理 */
+            using (StreamReader sr = new StreamReader(filePath2, Encoding.UTF8))
+            {
+
+                // ファイルの末端に達するまで、ファイルから行を読み込んで、表示します。
+                while (!sr.EndOfStream)
+                {
+                    // 内側のList<string> ループの内側でList<string>を作成するのがポイント
+                    List<string> stringList = new List<string>();
+
+                    line = sr.ReadLine();
+                    // 読み込んだ1行をString[]に格納
+                    readLine = line.Split();
+                    // 内側のList<string>にString[]の内容を格納
+                    stringList.AddRange(readLine);
+                    // List<List<string>>に代入さうるために使用するList<List<string>>に内側のList<string>の内容を追加
+                    LoadFileData_electric.Add(stringList);
+
+                    // 配列上書きの挙動が理解できていないので、readLineをクリア
+                    readLine = null;
+                }
+            }
+
+        }
+            for (int i = 0; i < 70; i++)
         {
             
-            positions[i, 0] = transform.GetChild(i).gameObject.GetComponent<Transform>().transform.position.x;
-            positions[i, 1] = transform.GetChild(i).gameObject.GetComponent<Transform>().transform.position.y;
-            positions[i, 2] = transform.GetChild(i).gameObject.GetComponent<Transform>().transform.position.z;
+            positions[i, 0] = transform.GetChild(i).gameObject.transform.position.x;
+            positions[i, 1] = transform.GetChild(i).gameObject.transform.position.y;
+            positions[i, 2] = transform.GetChild(i).gameObject.transform.position.z;
+            //UnityEngine.Debug.Log(positions[10, 2]);
 
 
             if (max_a< Math.Abs(float.Parse(LoadFileData[i][2]))) {
@@ -129,6 +161,23 @@ public class trans : MonoBehaviour
             transform.GetChild(i).gameObject.GetComponent<Transform>().transform.position = new Vector3(positions[i, 0], positions[i, 1], positions[i, 2]+a_n[i]*(0.01f));
             //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+            //円柱の座標取得
+            //positions_electric[i, 0] = transform.GetChild(i).gameObject.transform.position.x;
+            //positions_electric[i, 1] = transform.GetChild(i).gameObject.transform.position.y;
+            positions_electric[i, 2] = transform.GetChild(i).gameObject.transform.position.z;
+            
+            p = (int)(positions_electric[i, 2] * 1000 - 10);
+            UnityEngine.Debug.Log(p);
+            if (p < 0)
+            {
+                p = 0;
+            }
+            else if(p > 345)
+            {
+                p = 345;
+            }
+            a = float.Parse(LoadFileData_electric[p][1]) * (float)Math.Cos(time_sin * 0.0874);
+            
             //色変化
             if (a >= 0)
             {
